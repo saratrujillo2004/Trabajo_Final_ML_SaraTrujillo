@@ -1,1 +1,22 @@
+# Manejo de datos
+pandas==3.1.0
+numpy==2.4.6
+openpyxl==3.1.5    
 
+# Visualización
+matplotlib==3.11.2
+seaborn==0.13.2
+
+# Estadística y modelado
+scipy==1.17.1
+scikit-learn==1.9.1
+xgboost==3.2.0
+joblib==1.6.0
+
+# Notebooks
+ipykernel==7.4.0
+
+# Despliegue y app de monitoreo
+fastapi==0.162.0
+uvicorn==0.54.0
+streamlit==1.66.1
