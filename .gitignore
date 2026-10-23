@@ -11,3 +11,6 @@ __pycache__/
 # Archivos del sistema
 .DS_Store
 Thumbs.db
+
+# Archivo fuente original (los datos se versionan en Base_de_datos.csv)
+*.xlsx
