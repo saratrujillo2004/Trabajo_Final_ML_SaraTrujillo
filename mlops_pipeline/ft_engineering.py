@@ -1,3 +1,12 @@
+"""
+Ingeniería de características.
+
+Este archivo es la aplica las decisiones tomadas en el EDA, incluyendo 
+las reglas de validación, la creación de nuevas variables, la exclusión de 
+variables que no se utilizarán en el modelo, la división estratificada de los datos y
+la construcción del preprocesador con ColumnTransformer.
+
+"""
 
 from pathlib import Path
 
@@ -107,13 +116,80 @@ def crear_atributos_derivados(df):
     df = df.copy()
 
     df["ratio_cuota_salario"] = df["cuota_pactada"] / df["salario_cliente"]
+
     df["ratio_endeudamiento"] = df["total_otros_prestamos"] / df["salario_cliente"]
+
     df["tiene_mora"] = (df["saldo_mora"] > 0).astype(int)
+
     df["tendencia_sin_info"] = df["tendencia_ingresos"].isna().astype(int)
 
-    # Agrupa los tipos de crédito poco frecuentes (6, 7, 68) en "Otros"
+    # Agrupa los tipos de crédito poco frecuentes es decir los (6, 7, 68) en "Otros"
     df["tipo_credito"] = df["tipo_credito"].where(
         df["tipo_credito"].isin([4, 9, 10]), "Otros"
     ).astype(str)
 
     return df
+
+# Preprocesador (ColumnTransformer)
+
+def construir_preprocesador():
+
+    """Construye el ColumnTransformer con un carril por tipo de variable."""
+    numericas_asimetricas = Pipeline([
+        ("imputador", SimpleImputer(strategy="median")),
+        ("logaritmo", FunctionTransformer(np.log1p)),
+        ("escalador", StandardScaler()),
+    ])
+
+    numericas = Pipeline([
+        ("imputador", SimpleImputer(strategy="median")),
+        ("escalador", StandardScaler()),
+    ])
+
+    categoricas = Pipeline([
+        ("imputador", SimpleImputer(strategy="most_frequent")),
+        ("onehot", OneHotEncoder(handle_unknown="ignore")),
+    ])
+
+    ordinales = Pipeline([
+        ("imputador", SimpleImputer(strategy="most_frequent")),
+        ("ordinal", OrdinalEncoder(categories=[ORDEN_TENDENCIA])),
+    ])
+
+    return ColumnTransformer([
+        ("numericas_asimetricas", numericas_asimetricas, NUMERICAS_ASIMETRICAS),
+        ("numericas", numericas, NUMERICAS),
+        ("categoricas", categoricas, CATEGORICAS),
+        ("ordinales", ordinales, ORDINALES),
+    ])
+
+
+# Flujo completo
+
+def preparar_datos(ruta=RUTA_DATOS, test_size=0.2, random_state=42):
+
+    """Ejecuta todo el flujo y retorna los conjuntos de entrenamiento y prueba."""
+    df = cargar_datos(ruta)
+    df = aplicar_reglas_validacion(df)
+    df = crear_atributos_derivados(df)
+
+    X = df.drop(columns=VARIABLES_EXCLUIDAS + [VARIABLE_OBJETIVO])
+    y = df[VARIABLE_OBJETIVO]
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=test_size, stratify=y, random_state=random_state
+    )
+
+    preprocesador = construir_preprocesador()
+    return X_train, X_test, y_train, y_test, preprocesador
+
+
+if __name__ == "__main__":
+    X_train, X_test, y_train, y_test, preprocesador = preparar_datos()
+
+    print("Entrenamiento:", X_train.shape, "| Prueba:", X_test.shape)
+    print("% no paga en entrenamiento:", round((1 - y_train.mean()) * 100, 2))
+    print("% no paga en prueba:       ", round((1 - y_test.mean()) * 100, 2))
+
+    X_train_transformado = preprocesador.fit_transform(X_train)
+    print("Columnas después del preprocesamiento:", X_train_transformado.shape[1])
