@@ -110,7 +110,7 @@ def predecir(modelo, clientes):
 
 app = FastAPI(
     title="API de riesgo de no pago",
-    description="Predice si un cliente pagará a tiempo su crédito.",
+    description="Predice si un cliente pagará a tiempo su crédito (modelo Random forest).",
     version="1.0.0",
 )
 modelo_entrenado = cargar_modelo()
