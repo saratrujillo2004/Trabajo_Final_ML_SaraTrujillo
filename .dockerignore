@@ -1,0 +1,14 @@
+# Entorno virtual y archivos de Git
+venv/
+.git/
+
+# Archivos temporales de Python y Jupyter
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Archivos que la API no necesita
+*.ipynb
+*.xlsx
+Base_de_datos.csv
+mlops_pipeline/resultados/*.png
