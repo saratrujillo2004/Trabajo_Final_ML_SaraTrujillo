@@ -102,8 +102,10 @@ def aplicar_reglas_validacion(df):
 
     df.loc[~df["tendencia_ingresos"].isin(ORDEN_TENDENCIA), "tendencia_ingresos"] = np.nan
 
-    # Solo se conservan registros con una variable objetivo válida (0 o 1)
-    df = df[df[VARIABLE_OBJETIVO].isin([0, 1])]
+    # Solo se conservan registros con una variable objetivo válida (0 o 1).
+    # Los clientes nuevos que llegan a la API no traen la variable objetivo.
+    if VARIABLE_OBJETIVO in df.columns:
+        df = df[df[VARIABLE_OBJETIVO].isin([0, 1])]
 
     return df
 
