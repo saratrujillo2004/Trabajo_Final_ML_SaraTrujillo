@@ -1,0 +1,35 @@
+name: Pruebas y análisis de calidad (SonarCloud)
+
+on:
+  push:
+    branches: [main, certification, developer]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  pruebas-y-analisis:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Instalar Python 3.11
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Ejecutar pruebas con cobertura
+        run: pytest tests --cov=mlops_pipeline --cov-report=xml
+
+      - name: Análisis de SonarCloud
+        uses: SonarSource/sonarqube-scan-action@v7
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
