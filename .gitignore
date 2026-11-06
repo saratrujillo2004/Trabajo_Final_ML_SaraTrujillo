@@ -14,3 +14,8 @@ Thumbs.db
 
 # Archivo fuente original (los datos se versionan en Base_de_datos.csv)
 *.xlsx
+
+# Resultados de las pruebas
+.pytest_cache/
+.coverage
+coverage.xml
